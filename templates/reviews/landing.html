@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Nebula AI is an intelligent code review assistant powered by Google Gemini. Analyze your code for bugs, security risks, and performance optimizations instantly.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula AI | Intelligent Code Review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- VARIABLES --- */
+        :root {
+            --bg-color: #0D0C1D;
+            --primary-accent: #3D52D5;
+            --primary-glow: rgba(61, 82, 213, 0.4);
+            --secondary-accent: #8A2BE2;
+            --text-color: #E0E0E0;
+            --text-muted: #A0A0A0;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --nav-height: 80px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- UTILITIES --- */
+        .section-padding { padding: 6rem 5%; position: relative; }
+        .text-center { text-align: center; }
+        .gradient-text {
+            background: linear-gradient(to right, #fff, #a5a5a5);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .section-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 3rem; text-align: center;
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            height: var(--nav-height); padding: 0 5%; position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(12px); background: rgba(13, 12, 29, 0.85);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo { 
+            font-weight: 800; font-size: 1.5rem; color: #fff; text-decoration: none; z-index: 101; 
+            display: flex; align-items: center; gap: 8px;
+        }
+        .logo span { color: var(--primary-accent); }
+        .logo-icon { font-family: 'JetBrains Mono'; background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); padding: 2px 8px; border-radius: 4px; font-size: 1.2rem; }
+
+        /* --- BUTTON STYLES --- */
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+
+        .nav-btn {
+            text-decoration: none; font-size: 0.95rem; font-weight: 600; padding: 0.75rem 2rem; border-radius: 50px;
+            color: #ffffff; background: rgba(61, 82, 213, 0.15); border: 1px solid rgba(61, 82, 213, 0.5);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-btn:hover {
+            background: var(--primary-accent); border-color: var(--primary-accent);
+            box-shadow: 0 0 25px var(--primary-glow); transform: translateY(-2px);
+        }
+
+        /* Mobile Menu */
+        .menu-toggle { display: none; cursor: pointer; z-index: 101; }
+        .menu-toggle span { display: block; height: 3px; width: 25px; background: white; margin-bottom: 5px; transition: 0.3s; }
+
+        @media (max-width: 768px) {
+            .nav-btn { width: 80%; text-align: center; padding: 1rem; }
+            .menu-toggle { display: block; }
+            .nav-links {
+                position: fixed; top: var(--nav-height); left: 0; width: 100%; height: 0;
+                background: var(--bg-color); flex-direction: column; justify-content: center;
+                gap: 2rem; overflow: hidden; transition: height 0.4s ease-in-out;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            .nav-links.active { height: 350px; }
+            .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+            .menu-toggle.active span:nth-child(2) { opacity: 0; }
+            .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -6px); }
+        }
+
+        /* --- HERO SECTION --- */
+        .hero-container {
+            display: flex; align-items: center; justify-content: space-between;
+            min-height: calc(100vh - var(--nav-height)); padding: 0 5%; position: relative;
+        }
+        .hero-text { width: 45%; z-index: 2; }
+        .hero-text h1 {
+            font-size: 3.5rem; line-height: 1.1; font-weight: 700; margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, #a5a5a5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-text p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2.5rem; }
+        
+        .cta-btn {
+            display: inline-block; text-decoration: none; font-size: 1rem; font-weight: 600;
+            padding: 1rem 2.5rem; border-radius: 50px; color: #ffffff; 
+            background: var(--primary-accent); box-shadow: 0 0 20px var(--primary-glow); transition: 0.3s;
+        }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--primary-glow); }
+
+        /* --- 3D CODE CARD (Tilt on Hover) --- */
+        .hero-visual { width: 50%; position: relative; z-index: 2; perspective: 1000px; }
+        
+        .code-card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px;
+            padding: 1.5rem; backdrop-filter: blur(10px);
+            transform: rotateX(0deg) rotateY(0deg); /* DEFAULT FLAT */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative; overflow: hidden;
+        }
+
+        .code-card:hover {
+            transform: rotateX(10deg) rotateY(-10deg); /* HOVER TILT */
+            box-shadow: -15px 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .code-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(61, 82, 213, 0.1), rgba(138, 43, 226, 0.1));
+            z-index: -1; opacity: 0.5; transition: opacity 0.5s;
+        }
+        .code-card:hover::before { opacity: 1; }
+
+        .window-controls { display: flex; gap: 8px; margin-bottom: 1rem; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+
+        .code-lines { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-muted); }
+        .code-line { display: flex; padding: 2px 0; }
+        .line-num { color: #555; margin-right: 15px; width: 30px; text-align: right; user-select: none; }
+        .code-content { white-space: pre; flex: 1; }
+        
+        .kw { color: #ff79c6; } .fn { color: #8be9fd; } .str { color: #f1fa8c; }
+        .ai-analysis { 
+            color: var(--primary-accent); font-weight: bold; margin-top: 1rem; padding: 0.75rem; 
+            background: rgba(61, 82, 213, 0.1); border-left: 3px solid var(--primary-accent); 
+        }
+        
+        .aurora-blob {
+            position: absolute; top: 20%; right: -10%; width: 600px; height: 600px;
+            background: radial-gradient(circle, var(--primary-accent), transparent 70%);
+            opacity: 0.4; filter: blur(80px); z-index: 1; pointer-events: none;
+        }
+
+        /* --- COMPARISON STRIP --- */
+        .comparison-strip {
+            display: flex; width: 100%; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+        .comp-half { flex: 1; padding: 3rem; text-align: center; }
+        .comp-old { 
+            background: rgba(255, 50, 50, 0.02); 
+            border-right: 1px solid var(--glass-border);
+        }
+        .comp-new { background: rgba(61, 82, 213, 0.05); }
+        .comp-label { text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; }
+        .comp-text { font-size: 1.5rem; font-weight: 600; }
+        .text-bad { color: #7f8c8d; text-decoration: line-through; }
+        .text-good { color: #fff; text-shadow: 0 0 10px var(--primary-glow); }
+
+        /* --- FEATURES GRID --- */
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;
+            max-width: 1200px; margin: 0 auto;
+        }
+        .feature-card {
+            background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 2.5rem; text-align: center; transition: 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px); background: rgba(255, 255, 255, 0.05); border-color: var(--primary-accent);
+        }
+        .f-icon { font-size: 2.5rem; color: var(--secondary-accent); margin-bottom: 1.5rem; }
+        .f-title { font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600; color: #fff; }
+        .f-desc { font-size: 0.95rem; color: var(--text-muted); }
+
+        /* --- HOW IT WORKS (Responsive Arrows) --- */
+        .steps-container {
+            display: flex; align-items: center; justify-content: center; gap: 2rem;
+            max-width: 1000px; margin: 0 auto;
+        }
+        .step-card {
+            flex: 1; background: var(--glass-bg); border: 1px solid var(--glass-border);
+            padding: 2rem; border-radius: 12px; text-align: center; z-index: 2;
+        }
+        .step-num { 
+            display: inline-block; background: var(--primary-accent); color: white; 
+            width: 30px; height: 30px; border-radius: 50%; line-height: 30px; font-weight: bold; margin-bottom: 1rem;
+        }
+        .arrow-divider { font-size: 1.5rem; color: var(--text-muted); opacity: 0.5; transition: transform 0.3s; }
+
+        /* --- FOOTER --- */
+        footer {
+            border-top: 1px solid var(--glass-border); padding: 3rem 5%;
+            background: rgba(13, 12, 29, 0.95); text-align: center;
+        }
+        .footer-links { margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem; }
+        .footer-link { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .footer-link:hover { color: var(--primary-accent); }
+
+        /* --- RESPONSIVE TWEAKS --- */
+        @media (max-width: 900px) {
+            .hero-container { flex-direction: column; text-align: center; padding-top: 50px; }
+            .hero-text { width: 100%; margin-bottom: 3rem; }
+            .hero-visual { width: 100%; }
+            
+            .comparison-strip { flex-direction: column; }
+            .comp-old { border-right: none; border-bottom: 1px solid var(--glass-border); }
+            
+            .steps-container { flex-direction: column; }
+            .arrow-divider { transform: rotate(90deg); margin: 1rem 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#" class="logo"><div class="logo-icon">N</div>Nebula<span>AI</span></a>
+        <div class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></div>
+        <div class="nav-links" id="nav-menu">
+            <a href="{% url 'login' %}" class="nav-btn">Log In</a>
+            <a href="{% url 'register' %}" class="nav-btn">Register</a>
+        </div>
+    </nav>
+
+    <div class="hero-container">
+        <div class="hero-text">
+            <h1>Code Reviews from a <br> Higher Dimension.</h1>
+            <p>Harness the power of Gemini to illuminate bugs, security risks, and performance bottlenecks in seconds.</p>
+            <a href="{% url 'review_page' %}" class="cta-btn">Start Review &#10148;</a>
+        </div>
+        <div class="hero-visual">
+            <div class="code-card">
+                <div class="window-controls"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                <div class="code-lines">
+                    <div class="code-line"><span class="line-num">1</span> <span class="code-content"><span class="kw">def</span> <span class="fn">analyze</span>(data):</span></div>
+                    <div class="code-line"><span class="line-num">2</span> <span class="code-content">    <span class="kw">if</span> <span class="kw">not</span> data:</span></div>
+                    <div class="code-line"><span class="line-num">3</span> <span class="code-content">        <span class="kw">return</span> <span class="str">"Error"</span></span></div>
+                    <div class="ai-analysis">> AI Analysis: Input validation recommended.</div>
+                </div>
+            </div>
+        </div>
+        <div class="aurora-blob"></div>
+    </div>
+
+    <section class="comparison-strip">
+        <div class="comp-half comp-old">
+            <div class="comp-label" style="color: #666;">The Old Way</div>
+            <div class="comp-text text-bad">Manual Debugging</div>
+        </div>
+        <div class="comp-half comp-new">
+            <div class="comp-label" style="color: var(--primary-accent);">The Nebula Way</div>
+            <div class="comp-text text-good">AI-Powered Insights</div>
+        </div>
+    </section>
+
+    <section class="section-padding">
+        <h2 class="section-title">Why Developers <span style="color: var(--primary-accent);">Trust Nebula</span></h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fa-solid fa-bug f-icon"></i>
+                <h3 class="f-title">Bug Detection</h3>
+                <p class="f-desc">Identifies logic errors and syntax issues before they hit production using advanced static analysis.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-shield-halved f-icon"></i>
+                <h3 class="f-title">Security Scan</h3>
+                <p class="f-desc">Detects SQL injection, XSS vulnerabilities, and insecure dependencies instantly.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fa-solid fa-bolt f-icon"></i>
+                <h3 class="f-title">Performance</h3>
+                <p class="f-desc">Suggests Big-O optimizations to make your algorithms cleaner and faster.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" style="background: rgba(0,0,0,0.2);">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-num">1</div>
+                <h3>Paste Code</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">Copy your snippet into our secure editor.</p>
+            </div>
+            
+            <i class="fa-solid fa-arrow-right arrow-divider"></i>
+
+            <div class="step-card">
+                <div class="step-num">2</div>
+                <h3>AI Analysis</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">Gemini scans for issues in real-time.</p>
+            </div>
+
+            <i class="fa-solid fa-arrow-right arrow-divider"></i>
+
+            <div class="step-card">
+                <div class="step-num">3</div>
+                <h3>Get Results</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">View a detailed report and fix bugs.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="logo" style="justify-content: center; font-size: 1.2rem;">
+            <div class="logo-icon" style="font-size: 1rem;">N</div>Nebula<span>AI</span>
+        </div>
+        <p style="color: var(--text-muted); margin-top: 1rem; font-size: 0.9rem;">&copy; 2025 Nebula AI. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://github.com/santoshm11/nebula-ai" class="footer-link"><i class="fa-brands fa-github"></i> GitHub</a>
+            <a href="#" class="footer-link">Privacy Policy</a>
+            <a href="{% url 'login' %}" class="footer-link">Login</a>
+        </div>
+    </footer>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('nav-menu');
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+    </script>
+
+</body>
+</html>
